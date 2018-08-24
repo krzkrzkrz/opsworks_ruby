@@ -45,13 +45,18 @@ server {
     proxy_read_timeout <%= @out[:proxy_read_timeout] || '60' %>;
     proxy_send_timeout <%= @out[:proxy_send_timeout] || '60' %>;
 
+
+    if ($http_x_forwarded_proto != "https") {
+      return 301 https://$server_name$request_uri;
+    }
+
     <%# 
       return 301 https://$host$request_uri;
-    %>
 
     if ($http_x_forwarded_proto != "https") {
       rewrite ^(.*)$ https://www.metromart.com permanent;
     }
+    %>
 
     # If you don't find the filename in the static files
     # Then request it from the <%= @name %> server
