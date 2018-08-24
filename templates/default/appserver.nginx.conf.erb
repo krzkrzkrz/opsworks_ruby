@@ -84,6 +84,17 @@ server {
   }
 }
 
+server {
+  listen 80;
+  server_name metromart.com;
+
+  location / {
+    return 301 https://www.$server_name$request_uri;
+
+    #add_header Strict-Transport-Security "max-age=31536000; includeSubDomains;";
+  }
+}
+
 <% if @application[:enable_ssl] %>
 server {
   listen <%= @out[:ssl_port] %>;
