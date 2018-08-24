@@ -47,11 +47,11 @@ server {
 
     <%# 
       return 301 https://$host$request_uri;
-    %>
 
     if ($http_x_forwarded_proto != "https") {
       rewrite ^(.*)$ https://$server_name$1 permanent;
     }
+    %>
 
     # If you don't find the filename in the static files
     # Then request it from the <%= @name %> server
