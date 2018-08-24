@@ -91,7 +91,7 @@ server {
   location / {
     return 301 https://www.$server_name$request_uri;
 
-    #add_header Strict-Transport-Security "max-age=31536000; includeSubDomains;";
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains;";
   }
 }
 
