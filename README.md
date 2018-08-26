@@ -1,3 +1,70 @@
+# Forked version
+
+We use a forked version mainly for `opsworks_ruby/templates/default/appserver.nginx.conf.erb` which has the following custom configurations:
+
+1) Ability for the load balancer to perform health checks:
+
+```
+location /ping {
+  access_log off;
+  return 200;
+}
+```
+
+2) Load balancer uses the SSL certificate to terminate the connection and then decrypt requests from clients before sending them to the instances (also known as SSL termination).
+
+Which also means, anyone landing on the following domains, should be redirected to the https protocol. For example:
+
+- http://www.domain-name.com to https://www.domain-name.com
+
+To achieve this. I have:
+
+```
+server {
+  listen <%= @out[:port] %>; # Typically listens on port 80
+  ...
+  location @<%= @name %> {
+    ...
+    # Any request that did not originally come in to the ELB over HTTPS gets redirected
+    if ($http_x_forwarded_proto != "https") {
+      rewrite ^(.*)$ https://$server_name$1 permanent;
+    }
+    ...
+  }
+  ...
+}
+```
+
+3) To redirect the bare domain names to the https counterpart, i.e:
+
+- http://domain-name.com to https://www.domain-name.com
+- https://domain-name.com to https://www.domain-name.com
+
+I have the following:
+
+```
+# If request is made to the bare domain (i.e. domain-name.com)
+# Issue a redirect 301 response
+server {
+  listen 80;
+  server_name domain-name.com;
+
+  location /ping {
+    access_log off;
+    return 200;
+  }
+
+  location / {
+    return 301 https://www.$server_name$request_uri;
+
+    # Add HTTP Strict Transport Security for good measure
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains;";
+  }
+}
+```
+
+---
+
 # opsworks_ruby Cookbook
 
 [![Chef cookbook](https://img.shields.io/cookbook/v/opsworks_ruby.svg)](https://supermarket.chef.io/cookbooks/opsworks_ruby)
